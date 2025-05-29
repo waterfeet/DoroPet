@@ -12,10 +12,10 @@
 
 # 模型获取地址
 Maas
-![直达](https://training.xfyun.cn/experience/text2text)
+[直达](https://training.xfyun.cn/experience/text2text)
 
 DeepSeek
-![直达](https://platform.deepseek.com)
+[直达](https://platform.deepseek.com)
 
 通义千问
-![直达](https://bailian.console.aliyun.com/?spm=5176.30202035.J_5cDGbYTFXDvcuWnwVDdx7.1.370f1e71U1iaYl&tab=model#/model-market/detail/qwen3)
+[直达](https://bailian.console.aliyun.com/?spm=5176.30202035.J_5cDGbYTFXDvcuWnwVDdx7.1.370f1e71U1iaYl&tab=model#/model-market/detail/qwen3)

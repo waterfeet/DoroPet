@@ -3,7 +3,7 @@
 ![](https://github-readme-stats.vercel.app/api?username=waterfeet&show_icons=true&theme=transparent)
 
 ## DoroPet
-一个Doro的桌面助手，基于python和PyQt5，适配deepseek、Maas星火、千问的api接口，自定义人格对话
+一个Doro的桌面宠物，基于python和PyQt5，适配deepseek、Maas星火、千问的api接口，自定义人格对话
 
 ## 界面展示
 ![示例1](https://github.com/waterfeet/DoroPet/blob/main/%E7%A4%BA%E4%BE%8B1.png)

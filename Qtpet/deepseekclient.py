@@ -2,23 +2,10 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-# from PyQt5.QtCore import (
-#     Qt, QThread, pyqtSignal, QTimer, QPoint
-# )
-# from PyQt5.QtGui import (
-#     QFont, QFontDatabase, QIcon
-# )
-# from PyQt5.QtWidgets import (
-#     QApplication, QMainWindow, QWidget, QLabel,
-#     QPushButton, QTextEdit, QScrollArea, QVBoxLayout,
-#     QHBoxLayout, QMenu, QMessageBox,
-#     QStackedWidget, QSizePolicy
-# )
 
-# import configparser
 from option import OptionWidget
 from loading import LoadingWidget
-from openai import OpenAI
+from LLMprovider import ChatThread_gemini,ChatThread_Deepseek,ChatThread_maas,ChatThread_Qwen
 
 
 class myFont():
@@ -35,152 +22,7 @@ class myFont():
     def getFont(self):
         return self.font_family
 
-# OpenAI接口实现
-class ChatThread_Deepseek(QThread):
-    response_received = pyqtSignal(str)
-    stream_response_received = pyqtSignal(str)
-    def __init__(self, messages, stream=False, base_url="https://api.deepseek.com", api_key="", model = "deepseek-chat"):
-        super().__init__()
-        self.messages = messages
-        self.stream = stream
-        self.baseurl = base_url
-        self.apikey = api_key
-        self.dmodel = model
-        self.client = OpenAI(api_key=self.apikey, base_url=self.baseurl)
 
-    def run(self):
-        try:
-            # 创建 OpenAI 客户端实例
-            response = self.client.chat.completions.create(
-                model=self.dmodel,
-                messages=self.messages,
-                stream=self.stream
-            )
-
-            if self.stream:
-                full_content = ""
-                for chunk in response:
-                    if chunk.choices and len(chunk.choices) > 0:
-                        content = chunk.choices[0].delta.content
-                        if content:
-                            full_content += content
-                            self.stream_response_received.emit(content)
-                self.response_received.emit(full_content)
-            else:
-                if response.choices and len(response.choices) > 0:
-                    content = response.choices[0].message.content
-                    self.response_received.emit(content)
-
-        except Exception as e:
-            # 处理异常情况
-            error_msg = f"API Error: {str(e)}"
-            self.response_received.emit(error_msg)
-
-
-# qwen3
-class ChatThread_Qwen(QThread):
-    # 定义两个信号：完整响应和流式响应
-    response_received = pyqtSignal(str)       # 非流式或流式结束后发送完整内容
-    stream_response_received = pyqtSignal(str) # 流式响应时逐步发送
-
-    def __init__(self, messages, stream=False, base_url=None, api_key=None, model="qwen-plus"):
-        super().__init__()
-        self.messages = messages
-        self.stream = stream
-        self.base_url = base_url or "https://dashscope.aliyuncs.com/compatible-mode/v1"
-        self.api_key = api_key
-        self.model = model
-        self.enable_search = True
-        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
-
-    def run(self):
-        try:
-            # 创建 OpenAI 客户端并发送请求
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=self.messages,
-                extra_body={
-                    "enable_search": self.enable_search
-                },
-                stream=self.stream
-            )
-
-            if self.stream:
-                full_content = ""
-                for chunk in response:
-                    if chunk.choices and len(chunk.choices) > 0:
-                        content = chunk.choices[0].delta.content
-                        if content:
-                            full_content += content
-                            self.stream_response_received.emit(content)
-                # 发送完整响应
-                self.response_received.emit(full_content)
-            else:
-                if response.choices and len(response.choices) > 0:
-                    content = response.choices[0].message.content
-                    self.response_received.emit(content)
-
-        except Exception as e:
-            # 发生异常时发送错误信息
-            error_msg = f"API Error: {str(e)}"
-            self.response_received.emit(error_msg)
-
-
-#mass
-class ChatThread_mass(QThread):
-     # 定义两个信号：完整响应和流式响应
-    response_received = pyqtSignal(str)       # 非流式或流式结束后发送完整内容
-    stream_response_received = pyqtSignal(str) # 流式响应时逐步发送
-
-    def __init__(self, messages, stream=False, base_url= "http://maas-api.cn-huabei-1.xf-yun.com/v1", api_key=None, model="xdeepseekv32"):
-        super().__init__()
-        self.messages = messages
-        self.stream = stream
-        self.baseurl = base_url
-        self.apikey = api_key
-        self.model = model
-        self.enable_search = True
-        self.client = OpenAI(api_key=self.apikey, base_url=self.baseurl)
-
-    def run(self):
-        try:
-            # 创建 OpenAI 客户端并发送请求
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=self.messages,
-                stream=self.stream,
-                temperature=0.7,
-                max_tokens=4096,
-                extra_headers={"lora_id": "0"},  # 调用微调大模型时,对应替换为模型服务卡片上的resourceId
-                stream_options={"include_usage": True},
-                extra_body={"search_disable": False, "show_ref_label": False} 
-            )
-
-            if self.stream:
-                full_content = ""
-                for chunk in response:
-                    if hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content is not None:
-                        content = chunk.choices[0].delta.content
-                        self.stream_response_received.emit(content)
-                        full_content += content
-                # 发送完整响应
-                self.response_received.emit(full_content)
-            else:
-                if response.choices and len(response.choices) > 0:
-                    content = response.choices[0].message.content
-                    self.response_received.emit(content)
-
-        except Exception as e:
-            # 发生异常时发送错误信息
-            error_msg = f"API Error: {str(e)}"
-            self.response_received.emit(error_msg)
-
-
-
-
-
-
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 class ChatMessage(QWidget):
     def __init__(self, content, is_user=True, parent=None):
@@ -215,7 +57,7 @@ class ChatMessage(QWidget):
         # 气泡内部布局
         bubble_layout = QHBoxLayout(self.bubble)
         bubble_layout.addWidget(self.content_label)
-        bubble_layout.setContentsMargins(12, 6, 12, 6)  # 统一内边距管理，用于QSS替代方案
+        bubble_layout.setContentsMargins(12, 6, 12, 6) 
 
         # 用户消息右对齐
         if self.is_user:
@@ -312,6 +154,7 @@ def get_windows_theme():
         return 'unknown'
 
 class ChatApp(QMainWindow):
+    global_finished_response_received = pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.Tool)
@@ -449,7 +292,6 @@ class ChatApp(QMainWindow):
         self.chat_scroll = QScrollArea()
         self.chat_scroll.setWidgetResizable(True)
         self.chat_scroll.setObjectName("chat_scroll")
-        # self.chat_scroll.setStyleSheet("background-color: #34363A; border: none;")
         
         self.chat_container = QWidget(self)
         self.chat_container.setObjectName("chat_scroll")
@@ -485,7 +327,7 @@ class ChatApp(QMainWindow):
         self.send_button.setFixedSize(80, 32)
         self.send_button.setObjectName("SendBtn")
 
-        self.send_button.clicked.connect(self.send_message)
+        self.send_button.clicked.connect(self.on_clicked_send_message)
         
         button_layout.addWidget(self.send_button)
         input_layout.addWidget(self.input_box)
@@ -553,17 +395,19 @@ class ChatApp(QMainWindow):
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec_()
 
-    def send_message(self):
+
+    def on_clicked_send_message(self):
         user_input = self.input_box.toPlainText().strip()
         if not user_input:
             return
-
-        # 添加用户消息
         self.input_box.clear()
-        user_message = ChatMessage(user_input, is_user=True, parent=self.chat_container)
-        # user_message.setProperty("theme", self.current_theme)
+        self.send_message(user_input)
+
+    def send_message(self, content):
+        # 添加用户消息
+        user_message = ChatMessage(content, is_user=True, parent=self.chat_container)
         self.chat_layout.addWidget(user_message)
-        self.messages.append({"role": "user", "content": user_input})
+        self.messages.append({"role": "user", "content": content})
 
         # 添加加载状态
         self.loading_widget = LoadingWidget()
@@ -572,11 +416,8 @@ class ChatApp(QMainWindow):
 
         # 创建AI消息占位符
         self.current_ai_message = ChatMessage("", is_user=False,parent=self.chat_container)
-        # self.current_ai_message.setProperty("theme", self.current_theme)
         self.chat_layout.addWidget(self.current_ai_message)
 
-        # for i in range(0,400):
-        #     self.update_chat_display_stream(f"nihao{i}")
         # 启动线程
         provider = self.options_widget.getProvider()
         if provider.get("baseurl") == '':
@@ -591,8 +432,8 @@ class ChatApp(QMainWindow):
 
 
         self.chat_thread = QThread()
-        if(provider.get("provider") == "mass"):
-            self.chat_thread = ChatThread_mass(self.messages, 
+        if(provider.get("provider") == "maas"):
+            self.chat_thread = ChatThread_maas(self.messages, 
                                             stream= True, 
                                             base_url= provider.get("baseurl"),
                                             api_key= provider.get("apikey"), 
@@ -609,11 +450,18 @@ class ChatApp(QMainWindow):
                                             base_url= provider.get("baseurl"),
                                             api_key= provider.get("apikey"), 
                                             model= provider.get("model"))     
+        if(provider.get("provider") == "gemini"):
+            self.chat_thread = ChatThread_Deepseek(self.messages, 
+                                            stream= True, 
+                                            base_url= provider.get("baseurl"),
+                                            api_key= provider.get("apikey"), 
+                                            model= provider.get("model"))  
         
         self.chat_thread.stream_response_received.connect(self.update_chat_display_stream)
         self.chat_thread.finished.connect(self.on_chat_thread_finished)
         self.chat_thread.start()
 
+    # 流式输出
     def update_chat_display_stream(self, content):
         if self.loading_widget:
             self.chat_layout.removeWidget(self.loading_widget)
@@ -625,6 +473,7 @@ class ChatApp(QMainWindow):
             self.scroll_to_bottom()
             # print(content)
 
+    # 返回结果
     def on_chat_thread_finished(self):
         if self.loading_widget:
             self.chat_layout.removeWidget(self.loading_widget)
@@ -633,6 +482,7 @@ class ChatApp(QMainWindow):
         
         ai_content = self.current_ai_message.full_content
         self.messages.append({"role": "assistant", "content": ai_content})
+        self.global_finished_response_received.emit(ai_content)
         print(f"api调用结束：{ai_content}")
 
     def scroll_to_bottom(self):
@@ -644,6 +494,7 @@ class ChatApp(QMainWindow):
     def set_personality(self):
         # 创建人格菜单
         personality_menu = QMenu("选择人格", self)
+        personality_menu.setObjectName("personality_menu")
         personality_menu.setAttribute(Qt.WA_TranslucentBackground)
         # 添加预设项
         for name in self.preset_options:

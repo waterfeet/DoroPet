@@ -130,7 +130,7 @@ QPushButton#Tool_button {
     background-color: #DCE0EE;
     border-radius: 15px;
     padding: 8px;
-    font-family: 'Microsoft YaHei';
+    /* font-family: 'Microsoft YaHei'; */
     color: #666666;
     font-size: 14px;
 }
@@ -159,22 +159,22 @@ QPushButton#Menu_button:checked {
 }
 
 
-QMenu {
+QMenu#personality_menu {
     background-color: #F5F5F5;
     border: 1px solid #444;
     border-radius: 6px;
     padding: 4px;
     font-family: "Segoe UI", sans-serif;
 }
-QMenu::item {
+QMenu#personality_menu::item {
     padding: 6px 24px 6px 28px;
     border-radius: 4px;
     color: #666666;
 }
-QMenu::item:selected {
+QMenu#personality_menu::item:selected {
     background-color: #b4c3e4;
 }
-QMenu::icon {
+QMenu#personality_menu::icon {
     padding-left: 4px;
 }
 

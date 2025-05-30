@@ -3,7 +3,15 @@
 ![](https://github-readme-stats.vercel.app/api?username=waterfeet&show_icons=true&theme=transparent)
 
 ## DoroPet
-一个Doro的桌面宠物，基于python和PyQt5，适配deepseek、Maas星火、千问的api接口，自定义人格对话
+一个Doro的桌面宠物，基于python和PyQt5，适配deepseek、Maas星火、千问、Gemini的api接口，自定义人格对话
+
+### V1.1
+1.新增Gemini适配，但是使用了openAI兼容模式，请勿填错信息，如果无响应，也可尝试检查网络环境
+2.新增自动随机行为，每隔一段时间，会从（跳一下、切换动画、随机发言）中随机选择一种行为执行，与下一个功能会互斥
+3.新增快捷聊天功能，在Doro下方生成输入框，发送消息后，Doro上方会生成一个回复，同时同步到聊天主对话框
+
+### V1.0
+实现基本功能
 
 ## 界面展示
 ![示例1](https://github.com/waterfeet/DoroPet/blob/main/%E7%A4%BA%E4%BE%8B1.png)

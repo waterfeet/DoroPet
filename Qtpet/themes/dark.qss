@@ -158,22 +158,22 @@ QPushButton#Menu_button:checked {
 }
 
 
-QMenu {
+QMenu#personality_menu {
     background-color: #2d2f32;
     border: 1px solid #444;
     border-radius: 6px;
     padding: 4px;
     font-family: "Segoe UI", sans-serif;
 }
-QMenu::item {
+QMenu#personality_menu::item {
     padding: 6px 24px 6px 28px;
     border-radius: 4px;
     color: #eee;
 }
-QMenu::item:selected {
+QMenu#personality_menu::item:selected {
     background-color: #3a75c4;
 }
-QMenu::icon {
+QMenu#personality_menu::icon {
     padding-left: 4px;
 }
 

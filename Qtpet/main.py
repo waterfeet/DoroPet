@@ -95,6 +95,7 @@ class DesktopPet(QWidget):
         sendwidget_HLayout.addWidget(self.sendBtn)
 
         self.inputLineEdit.setPlaceholderText("输入消息...")
+        self.inputLineEdit.returnPressed.connect(self.send_message)  # 回车键绑定
         self.sendBtn.clicked.connect(self.send_message)
         self.inputLineEdit.hide()
         self.sendBtn.hide()
@@ -114,17 +115,17 @@ class DesktopPet(QWidget):
         show_ai = QAction("聊天", self)
         show_ai.triggered.connect(self.show_deepseek_window)
 
-        show_bottom_chat = QAction("快捷聊天", self)
-        show_bottom_chat.setCheckable(True)
-        show_bottom_chat.triggered.connect(self.on_show_bottom_chat)
+        self.show_bottom_chat = QAction("快捷聊天", self)
+        self.show_bottom_chat.setCheckable(True)
+        self.show_bottom_chat.triggered.connect(self.on_show_bottom_chat)
 
         change_gif = QAction("更换动画", self)
         change_gif.triggered.connect(self.OnclickchangeGIF)
 
-        auto_change_gif = QAction("自动更换", self)
-        auto_change_gif.setCheckable(True)
-        auto_change_gif.setChecked(True)
-        auto_change_gif.toggled.connect(self.OnclickAutobehavier)
+        self.auto_change_gif = QAction("自动更换", self)
+        self.auto_change_gif.setCheckable(True)
+        self.auto_change_gif.setChecked(True)
+        self.auto_change_gif.toggled.connect(self.OnclickAutobehavier)
 
         exit_action = QAction("退出", self)
         exit_action.triggered.connect(lambda: sys.exit())
@@ -135,9 +136,9 @@ class DesktopPet(QWidget):
         self.menu.addAction(zoom_def_action)
         self.menu.addSeparator()
         self.menu.addAction(show_ai)
-        self.menu.addAction(show_bottom_chat)
+        self.menu.addAction(self.show_bottom_chat)
         self.menu.addAction(change_gif)
-        self.menu.addAction(auto_change_gif)
+        self.menu.addAction(self.auto_change_gif)
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
         
@@ -237,12 +238,16 @@ class DesktopPet(QWidget):
     def OnclickAutobehavier(self):
         self.AutoChange = not self.AutoChange
         if self.AutoChange:
+            self.auto_change_gif.setChecked(True)
             # self.random_behavior()  # 立即触发一次
             self.jump_animation() # 立即触发一次跳
             self.interaction_timer.start(30000)  # 每xx秒触发一次随机行为
+
             if self.bottom_chat:
                 self.on_show_bottom_chat()
+                self.show_bottom_chat.setChecked(False)
         else:
+            self.auto_change_gif.setChecked(False)
             self.interaction_timer.stop()
 
     def random_behavior(self):
@@ -251,7 +256,7 @@ class DesktopPet(QWidget):
             lambda: self.jump_animation(),
             lambda: self.random_thought_bubble()
         ]
-        weights = [5, 3, 2]  # 权重比例为 5:3:2，即 50%, 30%, 20%
+        weights = [5, 1, 4]  # 权重比例为 5:3:2，即 50%, 30%, 20%
     
         selected_behavior = random.choices(behaviors, weights=weights, k=1)[0]
         selected_behavior()  # 触发行为
@@ -353,12 +358,15 @@ class DesktopPet(QWidget):
     def on_show_bottom_chat(self): 
         self.bottom_chat = not self.bottom_chat
         if self.bottom_chat:
+            self.show_bottom_chat.setChecked(True)
             self.inputLineEdit.show()
             self.sendBtn.show()
             if self.AutoChange:
-                self.OnclickAutobehavier() # 如果开了自动切换，需要关闭
+                self.auto_change_gif.setChecked(False)
+                self.interaction_timer.stop()
         else:
             self.inputLineEdit.hide()
+            self.show_bottom_chat.setChecked(False)
             self.sendBtn.hide()
 
     def send_message(self):
@@ -366,7 +374,8 @@ class DesktopPet(QWidget):
         if not user_input:
             return
         if self.AutoChange:
-            self.OnclickAutobehavier() # 如果开了自动切换，需要关闭
+            self.auto_change_gif.setChecked(False)
+            self.interaction_timer.stop()
         self.inputLineEdit.clear()
         self.ai_window.send_message(user_input) # 调用聊天窗口的功能，这样记录会留在聊天窗口
 

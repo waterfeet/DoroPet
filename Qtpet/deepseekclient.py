@@ -318,7 +318,7 @@ class ChatApp(QMainWindow):
         self.input_box.setAcceptRichText(False)
         self.input_box.setFixedHeight(210)
         self.input_box.setFont(QFont(myFont().getFont(), 12))
-        
+
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.addStretch()
@@ -371,7 +371,6 @@ class ChatApp(QMainWindow):
         if event.button() == Qt.LeftButton:
             self.drag_position = None  # 重置拖动位置
             event.accept()
-
 
     # def read_ini(self, file_path):
     #     config = configparser.RawConfigParser()
